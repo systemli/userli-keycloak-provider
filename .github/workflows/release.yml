@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 17
+          cache: "maven"
+
+      - name: Download dependencies
+        run: mvn -B dependency:go-offline
+
+      - name: Build
+        run: mvn -B package -DskipTests
+
+      - name: Zip artifacts
+        run: zip -r userli-storage-provider.zip target/*.jar
+
+      - name: Upload artifact to release
+        uses: softprops/action-gh-release@v1
+        with:
+          append_body: true
+          files: |
+            userli-storage-provider.zip
+          token: ${{ github.token }}
