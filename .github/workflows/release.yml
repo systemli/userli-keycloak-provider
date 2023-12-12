@@ -40,4 +40,5 @@ jobs:
           append_body: true
           files: |
             target/userli-storage-provider.zip
+          tag_name: ${{ github.ref_name }}
           token: ${{ github.token }}
