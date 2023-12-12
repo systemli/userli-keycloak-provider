@@ -31,12 +31,13 @@ jobs:
         run: mvn -B package -DskipTests
 
       - name: Zip artifacts
-        run: zip -r userli-storage-provider.zip target/*.jar
+        working-directory: target
+        run: zip -r userli-storage-provider.zip *.jar
 
       - name: Upload artifact to release
         uses: softprops/action-gh-release@v1
         with:
           append_body: true
           files: |
-            userli-storage-provider.zip
+            target/userli-storage-provider.zip
           token: ${{ github.token }}
