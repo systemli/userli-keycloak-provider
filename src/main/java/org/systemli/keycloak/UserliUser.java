@@ -36,4 +36,10 @@ public class UserliUser {
     public String getUsername() {
         return email.substring(0, email.indexOf('@'));
     }
+
+    @NonNull
+    private String roles;
+    public Boolean isRoleSpam() {
+        return roles.contains("ROLE_SPAM");
+    }
 }

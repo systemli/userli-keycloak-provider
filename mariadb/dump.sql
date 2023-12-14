@@ -68,7 +68,8 @@ VALUES
 	(1,968,1,'2023-11-23 19:04:56','2023-11-23 19:04:56','admin@example.org','$argon2id$v=19$m=65536,t=4,p=1$Exe5ShJPEy6Ar4tFMTmIzg$exP1vf3XaWSXGkboeGfEGhbfly9kMrdl4BIzPKQWY/E','a:1:{i:0;s:10:\"ROLE_ADMIN\";}',NULL,0,NULL,2,NULL,NULL,0,NULL,NULL,NULL,0,'a:0:{}'),
 	(2,927,1,'2023-11-23 19:04:56','2023-11-23 19:04:56','user@example.org','$argon2id$v=19$m=65536,t=4,p=1$s2BIwpR8GgagLBPOKhBAvQ$T0WVVMUex6/bW1/Rxn1CSwXDAvBQ8RajhlkZqZHCohM','a:1:{i:0;s:9:\"ROLE_USER\";}',NULL,0,NULL,2,NULL,NULL,0,NULL,NULL,NULL,0,'a:0:{}'),
 	(3,771,1,'2023-11-23 19:04:56','2023-11-23 19:04:56','support@example.org','$argon2id$v=19$m=65536,t=4,p=1$1rLp0KaJQzc5l8JMY21IZg$OT0zGa9yiKhkb8hRGb93J6pVPDZc4YZOnsPjEo+0R0M','a:1:{i:0;s:15:\"ROLE_MULTIPLIER\";}',NULL,0,NULL,2,NULL,NULL,0,NULL,NULL,NULL,0,'a:0:{}'),
-	(4,939,1,'2023-11-23 19:04:56','2023-11-23 19:04:57','suspicious@example.org','$argon2id$v=19$m=65536,t=4,p=1$Z2qO6yefhZTwSSw5doPU3A$0SbT3ceh+smCFapUjVbpl+fU6YiNH1tWjG/OFC6Mze0','a:1:{i:0;s:15:\"ROLE_SUSPICIOUS\";}',NULL,0,NULL,2,NULL,NULL,0,NULL,NULL,NULL,0,'a:0:{}');
+	(4,939,1,'2023-11-23 19:04:56','2023-11-23 19:04:57','suspicious@example.org','$argon2id$v=19$m=65536,t=4,p=1$Z2qO6yefhZTwSSw5doPU3A$0SbT3ceh+smCFapUjVbpl+fU6YiNH1tWjG/OFC6Mze0','a:1:{i:0;s:15:\"ROLE_SUSPICIOUS\";}',NULL,0,NULL,2,NULL,NULL,0,NULL,NULL,NULL,0,'a:0:{}'),
+	(5,914,1,'2023-11-23 19:04:56','2023-11-23 19:04:57','spam@example.org','$argon2i$v=19$m=4096,t=3,p=1$UGhhZThlcGhhaQ$JVVK56YAd///MWtFXUcLk799FbT7P8E3TnwnFhJBE8M','a:1:{i:0;s:9:\"ROLE_SPAM\";}',NULL,0,NULL,2,NULL,NULL,0,NULL,NULL,NULL,0,'a:0:{}');
 
 /*!40000 ALTER TABLE `virtual_users` ENABLE KEYS */;
 UNLOCK TABLES;

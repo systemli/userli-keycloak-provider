@@ -41,7 +41,7 @@ public class UserliUserAdapter extends AbstractUserAdapter {
 
     @Override
     public boolean isEnabled() {
-        return !user.getDeleted();
+        return !(user.getDeleted() || user.isRoleSpam());
     }
 
     @Override
