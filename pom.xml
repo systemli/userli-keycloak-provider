@@ -9,7 +9,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <version.keycloak>23.0.3</version.keycloak>
+        <version.keycloak>23.0.4</version.keycloak>
     </properties>
     <dependencies>
         <dependency>
