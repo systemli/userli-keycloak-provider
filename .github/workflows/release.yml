@@ -35,7 +35,7 @@ jobs:
         run: zip -r userli-storage-provider.zip *.jar
 
       - name: Upload artifact to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           append_body: true
           files: |
