@@ -18,6 +18,8 @@ services:
       - "--debug"
     volumes:
       - ./keycloak/conf/quarkus.properties:/opt/keycloak/conf/quarkus.properties:ro
+      - ./keycloak/keywind.jar:/opt/keycloak/providers/keywind.jar
+      - ./keycloak/systemli.jar:/opt/keycloak/providers/systemli.jar
     depends_on:
       - userli
 
