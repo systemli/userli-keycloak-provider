@@ -29,7 +29,7 @@ services:
       MYSQL_USER: mail
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: mail
-      MARIADB_RANDOM_ROOT_PASSWORD: true
+      MARIADB_RANDOM_ROOT_PASSWORD: 1
     volumes:
       - ./mariadb/dump.sql:/docker-entrypoint-initdb.d/dump.sql
       - userli:/var/lib/mysql
