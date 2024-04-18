@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Constants {
+        public String REALM_DOMAIN = "userliRealmDomain";
         public String BASE_URL = "userliBaseUrl";
-        public String AUTH_USERNAME = "userliAuthUsername";
-        public String AUTH_PASSWORD = "userAuthPassword";
+        public String API_TOKEN = "userliApiToken";
 }

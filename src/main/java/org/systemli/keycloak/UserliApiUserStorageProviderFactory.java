@@ -33,17 +33,17 @@ public class UserliApiUserStorageProviderFactory implements UserStorageProviderF
         @Override
         public List<ProviderConfigProperty> getConfigProperties() {
                 return ProviderConfigurationBuilder.create()
+                        .property(Constants.REALM_DOMAIN, "Realm domain", "Limit users to this domain", ProviderConfigProperty.STRING_TYPE, "", null)
                         .property(Constants.BASE_URL, "Base URL", "Base URL of the API", ProviderConfigProperty.STRING_TYPE, "", null)
-                        .property(Constants.AUTH_USERNAME, "BasicAuth Username", "Username for BasicAuth at the API", ProviderConfigProperty.STRING_TYPE, "", null)
-                        .property(Constants.AUTH_PASSWORD, "BasicAuth Password", "Password for BasicAuth at the API", ProviderConfigProperty.PASSWORD, "", null)
+                        .property(Constants.API_TOKEN, "API token", "Token for the userli keycloak API", ProviderConfigProperty.STRING_TYPE, "", null)
                         .build();
         }
 
         @Override
         public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
-                if (StringUtil.isBlank(config.get(Constants.BASE_URL))
-                        || StringUtil.isBlank(config.get(Constants.AUTH_USERNAME))
-                        || StringUtil.isBlank(config.get(Constants.AUTH_PASSWORD))) {
+                if (StringUtil.isBlank(config.get(Constants.REALM_DOMAIN))
+                        || StringUtil.isBlank(config.get(Constants.BASE_URL))
+                        || StringUtil.isBlank(config.get(Constants.API_TOKEN))) {
                         throw new ComponentValidationException("Configuration not properly set, please verify.");
                 }
         }
