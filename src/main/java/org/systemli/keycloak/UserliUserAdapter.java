@@ -13,12 +13,12 @@ import org.keycloak.models.UserModel;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.adapter.AbstractUserAdapter;
 
-public class UserliApiUserAdapter extends AbstractUserAdapter {
+public class UserliUserAdapter extends AbstractUserAdapter {
 
-    private final UserliApiUser user;
+    private final UserliUser user;
 
-    public UserliApiUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel storageProviderModel,
-            UserliApiUser user) {
+    public UserliUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel storageProviderModel,
+            UserliUser user) {
         super(session, realm, storageProviderModel);
         this.storageId = new StorageId(storageProviderModel.getId(), user.getId());
         this.user = user;

@@ -14,26 +14,26 @@ import org.keycloak.models.KeycloakSession;
 import java.util.List;
 
 @Slf4j
-public class UserliApiUserClientSimpleHttp implements UserliApiUserClient {
+public class UserliUserClientSimpleHttp implements UserliUserClient {
 
         private final CloseableHttpClient httpClient;
         private final String realmDomain;
         private final String baseUrl;
-        private final String apiToken;
+        private final String keycloakApiToken;
 
-        public UserliApiUserClientSimpleHttp(KeycloakSession session, ComponentModel model) {
+        public UserliUserClientSimpleHttp(KeycloakSession session, ComponentModel model) {
                 this.httpClient = session.getProvider(HttpClientProvider.class).getHttpClient();
                 this.realmDomain = model.get(Constants.REALM_DOMAIN);
                 this.baseUrl = model.get(Constants.BASE_URL);
-                this.apiToken = model.get(Constants.API_TOKEN);
+                this.keycloakApiToken = model.get(Constants.KEYCLOAK_API_TOKEN);
         }
 
         @Override
         @SneakyThrows
-        public List<UserliApiUser> getUsers(String search, int first, int max) {
+        public List<UserliUser> getUsers(String search, int first, int max) {
                 String url = String.format("%s/api/keycloak", baseUrl);
                 SimpleHttp simpleHttp = SimpleHttp.doGet(url, httpClient)
-                        .auth(apiToken)
+                        .auth(keycloakApiToken)
                         .param("domain", realmDomain)
                         .param("first", String.valueOf(first))
                         .param("max", String.valueOf(max));
@@ -48,7 +48,7 @@ public class UserliApiUserClientSimpleHttp implements UserliApiUserClient {
         public Integer getUsersCount() {
                 String url = String.format("%s/api/keycloak/count", baseUrl);
                 String count = SimpleHttp.doGet(url, httpClient)
-                        .auth(apiToken)
+                        .auth(keycloakApiToken)
                         .param("domain", realmDomain)
                         .asString();
                 return Integer.valueOf(count);
@@ -56,25 +56,25 @@ public class UserliApiUserClientSimpleHttp implements UserliApiUserClient {
 
         @Override
         @SneakyThrows
-        public UserliApiUser getUserById(String id) {
+        public UserliUser getUserById(String id) {
                 String url = String.format("%s/api/keycloak/user/%s", baseUrl, id);
                 SimpleHttp.Response response = SimpleHttp.doGet(url, httpClient)
-                        .auth(apiToken)
+                        .auth(keycloakApiToken)
                         .param("domain", realmDomain)
                         .asResponse();
                 if (response.getStatus() == 404) {
                         throw new WebApplicationException(response.getStatus());
                 }
-                return response.asJson(UserliApiUser.class);
+                return response.asJson(UserliUser.class);
         }
 
         @Override
         @SneakyThrows
         public Boolean validate(String email, String password) {
-                log.warn("UserliApiUserClientSimpleHttp validate: User with email '{}' and password '{}' tries to login", email, password);
+                log.warn("UserliUserClientSimpleHttp validate: User with email '{}' and password '{}' tries to login", email, password);
                 String url = String.format("%s/api/keycloak/validate/%s", baseUrl, email);
                 SimpleHttp.Response response = SimpleHttp.doPost(url, httpClient)
-                        .auth(apiToken)
+                        .auth(keycloakApiToken)
                         .param("domain", realmDomain)
                         .param("password", password)
                         .asResponse();

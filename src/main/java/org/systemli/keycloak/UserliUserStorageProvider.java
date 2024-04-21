@@ -26,19 +26,19 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 @Slf4j
-public class UserliApiUserStorageProvider implements UserStorageProvider, UserLookupProvider, UserQueryProvider, CredentialInputValidator {
+public class UserliUserStorageProvider implements UserStorageProvider, UserLookupProvider, UserQueryProvider, CredentialInputValidator {
 
         private final KeycloakSession session;
         private final ComponentModel model;
-        private final UserliApiUserClient client;
+        private final UserliUserClient client;
 
         protected Map<String, UserModel> loadedUsers = new HashMap<>();
         protected Properties properties = new Properties();
 
-        public UserliApiUserStorageProvider(KeycloakSession session, ComponentModel model) {
+        public UserliUserStorageProvider(KeycloakSession session, ComponentModel model) {
                 this.session = session;
                 this.model = model;
-                this.client = new UserliApiUserClientSimpleHttp(session, model);
+                this.client = new UserliUserClientSimpleHttp(session, model);
         }
 
         @Override
@@ -88,8 +88,8 @@ public class UserliApiUserStorageProvider implements UserStorageProvider, UserLo
                 UserModel adapter = loadedUsers.get(identifier);
                 if (adapter == null) {
                         try {
-                                UserliApiUser user = client.getUserById(identifier);
-                                adapter = new UserliApiUserAdapter(session, realm, model, user);
+                                UserliUser user = client.getUserById(identifier);
+                                adapter = new UserliUserAdapter(session, realm, model, user);
                                 loadedUsers.put(identifier, adapter);
                         } catch (WebApplicationException e) {
                                 log.warn("User with identifier '{}' could not be found, response from server: {}", identifier, e.getResponse().getStatus());
@@ -110,9 +110,9 @@ public class UserliApiUserStorageProvider implements UserStorageProvider, UserLo
                 return toUserModelStream(client.getUsers(search, firstResult, maxResults), realm);
         }
 
-        private Stream<UserModel> toUserModelStream(List<UserliApiUser> users, RealmModel realm) {
+        private Stream<UserModel> toUserModelStream(List<UserliUser> users, RealmModel realm) {
                 log.debug("Received {} users from provider", users.size());
-                return users.stream().map(user -> new UserliApiUserAdapter(session, realm, model, user));
+                return users.stream().map(user -> new UserliUserAdapter(session, realm, model, user));
         }
 
         @Override

@@ -11,13 +11,13 @@ import org.keycloak.utils.StringUtil;
 
 import java.util.List;
 
-public class UserliApiUserStorageProviderFactory implements UserStorageProviderFactory<UserliApiUserStorageProvider> {
+public class UserliUserStorageProviderFactory implements UserStorageProviderFactory<UserliUserStorageProvider> {
 
         public static final String PROVIDER_ID = "userli-api-user-provider";
 
         @Override
-        public UserliApiUserStorageProvider create(KeycloakSession session, ComponentModel model) {
-                return new UserliApiUserStorageProvider(session, model);
+        public UserliUserStorageProvider create(KeycloakSession session, ComponentModel model) {
+                return new UserliUserStorageProvider(session, model);
         }
 
         @Override
@@ -35,7 +35,7 @@ public class UserliApiUserStorageProviderFactory implements UserStorageProviderF
                 return ProviderConfigurationBuilder.create()
                         .property(Constants.REALM_DOMAIN, "Realm domain", "Limit users to this domain", ProviderConfigProperty.STRING_TYPE, "", null)
                         .property(Constants.BASE_URL, "Base URL", "Base URL of the API", ProviderConfigProperty.STRING_TYPE, "", null)
-                        .property(Constants.API_TOKEN, "API token", "Token for the userli keycloak API", ProviderConfigProperty.STRING_TYPE, "", null)
+                        .property(Constants.KEYCLOAK_API_TOKEN, "Keycloak API token", "Token for the userli keycloak API", ProviderConfigProperty.STRING_TYPE, "", null)
                         .build();
         }
 
@@ -43,7 +43,7 @@ public class UserliApiUserStorageProviderFactory implements UserStorageProviderF
         public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
                 if (StringUtil.isBlank(config.get(Constants.REALM_DOMAIN))
                         || StringUtil.isBlank(config.get(Constants.BASE_URL))
-                        || StringUtil.isBlank(config.get(Constants.API_TOKEN))) {
+                        || StringUtil.isBlank(config.get(Constants.KEYCLOAK_API_TOKEN))) {
                         throw new ComponentValidationException("Configuration not properly set, please verify.");
                 }
         }

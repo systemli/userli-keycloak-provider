@@ -4,12 +4,10 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class UserliApiUser {
+public class UserliUser {
     private String id;
     private String email;
-    // private String password;
     private List<String> roles;
-    // private UserliDomain domain;
 
     public String getUsername() {
         return email.substring(0, email.indexOf('@'));

@@ -6,5 +6,5 @@ import lombok.experimental.UtilityClass;
 public class Constants {
         public String REALM_DOMAIN = "userliRealmDomain";
         public String BASE_URL = "userliBaseUrl";
-        public String API_TOKEN = "userliApiToken";
+        public String KEYCLOAK_API_TOKEN = "userliKeycloakToken";
 }

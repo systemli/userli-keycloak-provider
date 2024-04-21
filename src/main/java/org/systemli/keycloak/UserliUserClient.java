@@ -13,11 +13,11 @@ import java.util.List;
 
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public interface UserliApiUserClient {
+public interface UserliUserClient {
 
         @GET
         @Path("/api/keycloak")
-        List<UserliApiUser> getUsers(@QueryParam("search") String search, @QueryParam("first") int first, @QueryParam("max") int max);
+        List<UserliUser> getUsers(@QueryParam("search") String search, @QueryParam("first") int first, @QueryParam("max") int max);
 
         @GET
         @Path("/api/keycloak/count")
@@ -25,7 +25,7 @@ public interface UserliApiUserClient {
 
         @GET
         @Path("/api/keycloak/user/{id}")
-        UserliApiUser getUserById(@PathParam("id") String id);
+        UserliUser getUserById(@PathParam("id") String id);
 
         @POST
         @Path("/api/keycloak/validate/${email}")
