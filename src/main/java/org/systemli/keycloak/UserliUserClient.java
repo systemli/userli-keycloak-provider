@@ -16,19 +16,19 @@ import java.util.List;
 public interface UserliUserClient {
 
         @GET
-        @Path("/api/keycloak")
+        @Path("/api/keycloak/{domain}")
         List<UserliUser> getUsers(@QueryParam("search") String search, @QueryParam("first") int first, @QueryParam("max") int max);
 
         @GET
-        @Path("/api/keycloak/count")
+        @Path("/api/keycloak/{domain}/count")
         Integer getUsersCount();
 
         @GET
-        @Path("/api/keycloak/user/{id}")
+        @Path("/api/keycloak/{domain}/user/{id}")
         UserliUser getUserById(@PathParam("id") String id);
 
         @POST
-        @Path("/api/keycloak/validate/${email}")
+        @Path("/api/keycloak/{domain}/validate/${email}")
         Boolean validate(@PathParam("email") String email, @QueryParam("password") String password);
 
 }

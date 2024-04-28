@@ -31,10 +31,9 @@ public class UserliUserClientSimpleHttp implements UserliUserClient {
         @Override
         @SneakyThrows
         public List<UserliUser> getUsers(String search, int first, int max) {
-                String url = String.format("%s/api/keycloak", baseUrl);
+                String url = String.format("%s/api/keycloak/%s", baseUrl, realmDomain);
                 SimpleHttp simpleHttp = SimpleHttp.doGet(url, httpClient)
                         .auth(keycloakApiToken)
-                        .param("domain", realmDomain)
                         .param("first", String.valueOf(first))
                         .param("max", String.valueOf(max));
                 if (search != null) {
@@ -46,10 +45,9 @@ public class UserliUserClientSimpleHttp implements UserliUserClient {
         @Override
         @SneakyThrows
         public Integer getUsersCount() {
-                String url = String.format("%s/api/keycloak/count", baseUrl);
+                String url = String.format("%s/api/keycloak/%s/count", baseUrl, realmDomain);
                 String count = SimpleHttp.doGet(url, httpClient)
                         .auth(keycloakApiToken)
-                        .param("domain", realmDomain)
                         .asString();
                 return Integer.valueOf(count);
         }
@@ -57,10 +55,9 @@ public class UserliUserClientSimpleHttp implements UserliUserClient {
         @Override
         @SneakyThrows
         public UserliUser getUserById(String id) {
-                String url = String.format("%s/api/keycloak/user/%s", baseUrl, id);
+                String url = String.format("%s/api/keycloak/%s/user/%s", baseUrl, realmDomain, id);
                 SimpleHttp.Response response = SimpleHttp.doGet(url, httpClient)
                         .auth(keycloakApiToken)
-                        .param("domain", realmDomain)
                         .asResponse();
                 if (response.getStatus() == 404) {
                         throw new WebApplicationException(response.getStatus());
@@ -72,10 +69,9 @@ public class UserliUserClientSimpleHttp implements UserliUserClient {
         @SneakyThrows
         public Boolean validate(String email, String password) {
                 log.warn("UserliUserClientSimpleHttp validate: User with email '{}' and password '{}' tries to login", email, password);
-                String url = String.format("%s/api/keycloak/validate/%s", baseUrl, email);
+                String url = String.format("%s/api/keycloak/%s/validate/%s", baseUrl, realmDomain, email);
                 SimpleHttp.Response response = SimpleHttp.doPost(url, httpClient)
                         .auth(keycloakApiToken)
-                        .param("domain", realmDomain)
                         .param("password", password)
                         .asResponse();
                 if (response.getStatus() == 200) {
