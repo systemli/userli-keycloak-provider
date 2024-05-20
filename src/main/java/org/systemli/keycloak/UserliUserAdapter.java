@@ -40,11 +40,6 @@ public class UserliUserAdapter extends AbstractUserAdapter {
     }
 
     @Override
-    public boolean isEnabled() {
-        return !user.getDeleted();
-    }
-
-    @Override
     public Map<String, List<String>> getAttributes() {
         MultivaluedHashMap<String, String> attributes = new MultivaluedHashMap<>();
         attributes.add(UserModel.USERNAME, getUsername());

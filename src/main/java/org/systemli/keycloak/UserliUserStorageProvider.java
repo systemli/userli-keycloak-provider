@@ -1,12 +1,12 @@
 package org.systemli.keycloak;
 
 import org.keycloak.component.ComponentModel;
-import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputValidator;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.StorageId;
@@ -14,67 +14,31 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 
-import jakarta.persistence.EntityManager;
+import jakarta.ws.rs.WebApplicationException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Stream;
 
-public class UserliUserStorageProvider
-                implements UserStorageProvider, UserLookupProvider, CredentialInputValidator, UserQueryProvider {
+public class UserliUserStorageProvider implements UserStorageProvider, UserLookupProvider, UserQueryProvider, CredentialInputValidator {
 
         private final KeycloakSession session;
         private final ComponentModel model;
-        private final PasswordVerifier passwordVerifier = new PasswordVerifier();
-        private final UserliDomain domain;
-        private final EntityManager entityManager;
+        private final UserliHttpClient client;
+
+        protected Map<String, UserModel> loadedUsers = new HashMap<>();
+        protected Properties properties = new Properties();
 
         public UserliUserStorageProvider(KeycloakSession session, ComponentModel model) {
                 this.session = session;
                 this.model = model;
-                this.entityManager = session.getProvider(JpaConnectionProvider.class, "userli").getEntityManager();
-                this.domain = entityManager.createNamedQuery("findByName", UserliDomain.class)
-                                .setParameter("name", model.get("domain")).getSingleResult();
+                this.client = new UserliHttpClient(session, model);
         }
 
         @Override
         public void close() {
-                entityManager.close();
-        }
-
-        @Override
-        public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult,
-                        Integer maxResults) {
-                String search = params.get(UserModel.SEARCH);
-                List<UserliUser> users = entityManager.createNamedQuery("findUsersByEmailAndDomain", UserliUser.class)
-                                .setParameter("email", search + "%")
-                                .setParameter("domain", domain)
-                                .setMaxResults(maxResults)
-                                .setFirstResult(firstResult)
-                                .getResultList();
-
-                return users.stream().map(user -> new UserliUserAdapter(session, realm, model, user));
-        }
-
-        @Override
-        public int getUsersCount(RealmModel realm, boolean includeServiceAccount) {
-                int count = entityManager.createNamedQuery("countUsersByDomain", Long.class)
-                                .setParameter("domain", domain).getSingleResult().intValue();
-                return count;
-        }
-
-        @Override
-        public Stream<UserModel> getGroupMembersStream(RealmModel realm, GroupModel group, Integer firstResult,
-                        Integer maxResults) {
-                // We don't support groups
-                return Stream.empty();
-        }
-
-        @Override
-        public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realm, String attrName,
-                        String attrValue) {
-                // We don't support user attributes
-                return Stream.empty();
         }
 
         @Override
@@ -89,48 +53,70 @@ public class UserliUserStorageProvider
 
         @Override
         public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
-                if (!this.supportsCredentialType(credentialInput.getType())) {
+                if (!this.supportsCredentialType(credentialInput.getType()) || !(credentialInput instanceof UserCredentialModel)) {
                         return false;
                 }
 
-                UserliUser loadedUser = entityManager.createNamedQuery("findUserByEmailAndDomain", UserliUser.class)
-                                .setParameter("email", user.getEmail()).setParameter("domain", domain)
-                                .getSingleResult();
-
-                if (loadedUser == null) {
+                String password = credentialInput.getChallengeResponse();
+                if (password == null) {
                         return false;
                 }
 
-                return passwordVerifier.verify(credentialInput.getChallengeResponse(), loadedUser.getPassword());
+                return client.validate(user.getEmail(), password);
         }
 
         @Override
         public UserModel getUserById(RealmModel realm, String id) {
-                UserliUser user = entityManager.createNamedQuery("findUserByIdAndDomain", UserliUser.class)
-                                .setParameter("id", StorageId.externalId(id))
-                                .setParameter("domain", domain)
-                                .getSingleResult();
-
-                return new UserliUserAdapter(session, realm, model, user);
+                return findUser(realm, StorageId.externalId(id));
         }
 
         @Override
         public UserModel getUserByUsername(RealmModel realm, String username) {
-                UserliUser user = entityManager.createNamedQuery("findUserByUsernameAndDomain", UserliUser.class)
-                                .setParameter("username", username + "@" + domain.getName())
-                                .setParameter("domain", domain)
-                                .getSingleResult();
-
-                return new UserliUserAdapter(session, realm, model, user);
+                return findUser(realm, username);
         }
 
         @Override
         public UserModel getUserByEmail(RealmModel realm, String email) {
-                UserliUser user = entityManager.createNamedQuery("findUserByEmailAndDomain", UserliUser.class)
-                                .setParameter("email", email)
-                                .setParameter("domain", domain)
-                                .getSingleResult();
+                return findUser(realm, email);
+        }
 
-                return new UserliUserAdapter(session, realm, model, user);
+        private UserModel findUser(RealmModel realm, String identifier) {
+                UserModel adapter = loadedUsers.get(identifier);
+                if (adapter == null) {
+                        try {
+                                UserliUser user = client.getUserById(identifier);
+                                adapter = new UserliUserAdapter(session, realm, model, user);
+                                loadedUsers.put(identifier, adapter);
+                        } catch (WebApplicationException ignored) {
+                        }
+                }
+                return adapter;
+        }
+
+        @Override
+        public int getUsersCount(RealmModel real) {
+                return client.getUsersCount();
+        }
+
+        @Override
+        public Stream<UserModel> searchForUserStream(RealmModel realm, Map<String, String> params, Integer firstResult, Integer maxResults) {
+                String search = params.get(UserModel.SEARCH);
+                return toUserModelStream(client.getUsers(search, firstResult, maxResults), realm);
+        }
+
+        private Stream<UserModel> toUserModelStream(List<UserliUser> users, RealmModel realm) {
+                return users.stream().map(user -> new UserliUserAdapter(session, realm, model, user));
+        }
+
+        @Override
+        public Stream<UserModel> getGroupMembersStream(RealmModel realm, GroupModel group, Integer firstResult, Integer maxResults) {
+                // We don't support groups
+                return Stream.empty();
+        }
+
+        @Override
+        public Stream<UserModel> searchForUserByUserAttributeStream(RealmModel realm, String attrName, String attrValue) {
+                // We don't support user attributes
+                return Stream.empty();
         }
 }

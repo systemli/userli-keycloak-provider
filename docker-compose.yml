@@ -20,23 +20,7 @@ services:
       - ./keycloak/conf/quarkus.properties:/opt/keycloak/conf/quarkus.properties:ro
       - ./keycloak/keywind.jar:/opt/keycloak/providers/keywind.jar
       - ./keycloak/systemli.jar:/opt/keycloak/providers/systemli.jar
-    depends_on:
-      - userli
-
-  userli:
-    image: mariadb:10.3
-    environment:
-      MYSQL_USER: mail
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: mail
-      MARIADB_RANDOM_ROOT_PASSWORD: true
-    volumes:
-      - ./mariadb/dump.sql:/docker-entrypoint-initdb.d/dump.sql
-      - userli:/var/lib/mysql
 
 networks:
   default:
     name: keycloak
-
-volumes:
-  userli:
