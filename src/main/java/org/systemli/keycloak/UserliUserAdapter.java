@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.credential.LegacyUserCredentialManager;
+import org.keycloak.credential.UserCredentialManager;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.SubjectCredentialManager;
@@ -18,7 +18,7 @@ public class UserliUserAdapter extends AbstractUserAdapter {
     private final UserliUser user;
 
     public UserliUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel storageProviderModel,
-            UserliUser user) {
+                             UserliUser user) {
         super(session, realm, storageProviderModel);
         this.storageId = new StorageId(storageProviderModel.getId(), user.getId());
         this.user = user;
@@ -50,6 +50,6 @@ public class UserliUserAdapter extends AbstractUserAdapter {
 
     @Override
     public SubjectCredentialManager credentialManager() {
-        return new LegacyUserCredentialManager(session, realm, this);
+        return new UserCredentialManager(session, realm, this);
     }
 }
