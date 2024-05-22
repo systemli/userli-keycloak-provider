@@ -2,12 +2,14 @@ package org.systemli.keycloak;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
+import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserCredentialModel;
 import org.keycloak.models.UserModel;
+import org.keycloak.models.credential.OTPCredentialModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.UserStorageProvider;
@@ -43,12 +45,16 @@ public class UserliUserStorageProvider implements UserStorageProvider, UserLooku
 
     @Override
     public boolean supportsCredentialType(String credentialType) {
-        return PasswordCredentialModel.TYPE.equals(credentialType);
+        return PasswordCredentialModel.TYPE.equals(credentialType) || OTPCredentialModel.TYPE.equals(credentialType);
     }
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        return supportsCredentialType(credentialType);
+        return switch (credentialType) {
+            case PasswordCredentialModel.TYPE -> true;
+            case OTPCredentialModel.TYPE -> client.isConfiguredFor(user.getEmail(), credentialType);
+            default -> false;
+        };
     }
 
     @Override
@@ -57,12 +63,7 @@ public class UserliUserStorageProvider implements UserStorageProvider, UserLooku
             return false;
         }
 
-        String password = credentialInput.getChallengeResponse();
-        if (password == null) {
-            return false;
-        }
-
-        return client.validate(user.getEmail(), password);
+        return client.validate(user.getEmail(), credentialInput.getChallengeResponse(), credentialInput.getType());
     }
 
     @Override
