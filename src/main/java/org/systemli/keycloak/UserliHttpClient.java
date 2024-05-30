@@ -60,13 +60,22 @@ public class UserliHttpClient {
     }
 
     @SneakyThrows
-    public Boolean validate(String email, String password) {
+    public Boolean validate(String email, String password, String credentialType) {
         String url = String.format("%s/api/keycloak/%s/validate/%s", baseUrl, realmDomain, email);
         SimpleHttp.Response response = SimpleHttp.doPost(url, httpClient)
             .auth(keycloakApiToken)
+            .param("credentialType", credentialType)
             .param("password", password)
             .asResponse();
         return response.getStatus() == 200;
+    }
+
+    @SneakyThrows
+    public Boolean isConfiguredFor(String email, String credentialType) {
+        String url = String.format("%s/api/keycloak/%s/configured/%s/%s", baseUrl, realmDomain, credentialType, email);
+        return SimpleHttp.doGet(url, httpClient)
+                .auth(keycloakApiToken)
+                .asResponse().getStatus() == 200;
     }
 
 }
