@@ -2,7 +2,6 @@ package org.systemli.keycloak;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
-import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.KeycloakSession;
