@@ -1,4 +1,4 @@
-FROM maven:3-amazoncorretto-21-debian-bookworm AS provider
+FROM maven:3-amazoncorretto-23-debian-bookworm AS provider
 
 COPY src/ /opt/keycloak-provider/src
 COPY pom.xml /opt/keycloak-provider/pom.xml
