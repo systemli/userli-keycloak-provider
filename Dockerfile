@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-17 AS provider
+FROM maven:3-eclipse-temurin-23 AS provider
 
 COPY src/ /opt/keycloak-provider/src
 COPY pom.xml /opt/keycloak-provider/pom.xml
