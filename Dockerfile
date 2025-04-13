@@ -7,7 +7,7 @@ WORKDIR /opt/keycloak-provider
 
 RUN mvn clean package -DskipTests
 
-FROM quay.io/keycloak/keycloak:26.0
+FROM quay.io/keycloak/keycloak:26.1
 COPY --chown=keycloak:keycloak --from=provider /opt/keycloak-provider/target/*.jar /opt/keycloak/providers/
 
 ENV KC_HOSTNAME=localhost
