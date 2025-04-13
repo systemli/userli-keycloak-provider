@@ -4,25 +4,34 @@ This is a user provider for [Userli](https://github.com/systemli/userli) that us
 
 ## Development
 
-* Requirements: [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/)
+* Requirements: [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/) or Podman
 
-1. Build the provider and start the KeyCloak and MariaDB containers:
+1. Build the provider and start the KeyCloak, Userli and MariaDB containers:
 
     ```bash
-    docker-compose up -d --build
+    podman compose up -d --build
     ```
 
-2. Login to KeyCloak at [http://localhost:8080](http://localhost:8080) with the credentials `admin`/`admin`.
+2. Prepare data in Userli:
 
-3. Add the new Provider to KeyCloak:
+    ```bash
+    podman compose exec userli bin/console doctrine:schema:create
+    podman compose exec userli bin/console doctrine:fixtures:load
+    ```
+
+3. Login to KeyCloak at [http://localhost:8080](http://localhost:8080) with the credentials `admin`/`admin`.
+
+4. Add the new Provider to KeyCloak:
 
     * Go to **User Federation**
-    * Click **Add Userli-storage-provider**
+    * Click **Add Userli-user-provider**
     * Type "Userli" as **Name**
     * Type "example.org" as **Domain**
+    * Type "http://userli/" as **Base URL**
+    * Type "keycloak" as **API token**
     * Click **Save**
 
-4. Now you can login to KeyCloak with following users:
+5. Now you can login to KeyCloak with following users:
 
     * `admin@example.org` / `password`
     * `user@example.org` / `password`
