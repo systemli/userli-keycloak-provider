@@ -30,15 +30,11 @@ jobs:
       - name: Build
         run: mvn -B package -DskipTests
 
-      - name: Zip artifacts
-        working-directory: target
-        run: zip -r userli-storage-provider.zip *.jar
-
       - name: Upload artifact to release
         uses: softprops/action-gh-release@v2
         with:
           append_body: true
           files: |
-            target/userli-storage-provider.zip
+            target/userli-storage-provider-1.0.0.jar
           tag_name: ${{ github.ref_name }}
           token: ${{ github.token }}
