@@ -1,5 +1,6 @@
 package org.systemli.keycloak;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -74,6 +75,7 @@ class UserliWebauthnAuthenticatorTest {
 
         when(context.form()).thenReturn(form);
         when(form.createLoginWebAuthn()).thenReturn(response);
+        when(client.createWebauthnChallenge(EMAIL)).thenReturn("Y2hhbGxlbmdl");
     }
 
     @Test
@@ -87,7 +89,7 @@ class UserliWebauthnAuthenticatorTest {
     }
 
     @Test
-    void authenticateRendersTheKeysOfTheUserWithANewChallenge() {
+    void authenticateRendersTheKeysOfTheUserWithAChallengeFromUserli() {
         UserliWebauthnCredential credential = new UserliWebauthnCredential();
         credential.setCredentialId("Y3JlZA");
         when(client.isConfiguredFor(EMAIL, "webauthn")).thenReturn(true);
@@ -95,11 +97,24 @@ class UserliWebauthnAuthenticatorTest {
 
         authenticator.authenticate(context);
 
-        String challenge = notes.get(UserliWebauthnAuthenticator.CHALLENGE_NOTE);
-        verify(form).setAttribute("challenge", challenge);
+        assertEquals("Y2hhbGxlbmdl", notes.get(UserliWebauthnAuthenticator.CHALLENGE_NOTE));
+        verify(form).setAttribute("challenge", "Y2hhbGxlbmdl");
         verify(form).setAttribute("rpId", "example.org");
         verify(form).setAttribute(eq("authenticators"), any(UserliWebauthnAuthenticator.AuthenticatorsBean.class));
         verify(context).challenge(response);
+    }
+
+    @Test
+    void authenticateKeepsNoChallengeWhenUserliRefusesOne() {
+        notes.put(UserliWebauthnAuthenticator.CHALLENGE_NOTE, "old");
+        when(client.isConfiguredFor(EMAIL, "webauthn")).thenReturn(true);
+        when(client.getWebauthnCredentials(EMAIL)).thenReturn(List.of());
+        when(client.createWebauthnChallenge(EMAIL)).thenReturn(null);
+
+        authenticator.authenticate(context);
+
+        assertFalse(notes.containsKey(UserliWebauthnAuthenticator.CHALLENGE_NOTE));
+        verify(form).setAttribute("challenge", "");
     }
 
     @Test

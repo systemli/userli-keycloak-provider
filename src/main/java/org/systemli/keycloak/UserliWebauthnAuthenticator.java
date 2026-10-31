@@ -1,7 +1,5 @@
 package org.systemli.keycloak;
 
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.List;
 
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -23,14 +21,12 @@ import org.keycloak.utils.StringUtil;
 /**
  * Second factor with WebAuthn security keys that are registered in Userli.
  * <p>
- * Keycloak creates the challenge and renders its WebAuthn login page, Userli verifies the assertion
- * against the stored public key. The realm WebAuthn policy sets the RP ID, which must match Userli.
+ * Userli creates a single-use challenge, Keycloak renders its WebAuthn login page with it and Userli
+ * verifies the assertion against the stored public key. The realm WebAuthn policy sets the RP ID, which must match Userli.
  */
 public class UserliWebauthnAuthenticator implements Authenticator {
 
     static final String CHALLENGE_NOTE = "USERLI_WEBAUTHN_CHALLENGE";
-
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final UserliClientFactory clientFactory;
 
@@ -111,11 +107,18 @@ public class UserliWebauthnAuthenticator implements Authenticator {
     }
 
     /**
-     * Renders the WebAuthn login page of the theme with a new challenge.
+     * Renders the WebAuthn login page of the theme with a new challenge from Userli.
      */
     private Response createForm(AuthenticationFlowContext context, String error) {
-        String challenge = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes());
-        context.getAuthenticationSession().setAuthNote(CHALLENGE_NOTE, challenge);
+        UserliHttpClient client = clientFactory.create(context.getSession(), context.getRealm(), context.getUser());
+        String challenge = client == null ? null : client.createWebauthnChallenge(context.getUser().getEmail());
+        if (StringUtil.isBlank(challenge)) {
+            // The assertion is rejected in action() without a challenge
+            challenge = "";
+            context.getAuthenticationSession().removeAuthNote(CHALLENGE_NOTE);
+        } else {
+            context.getAuthenticationSession().setAuthNote(CHALLENGE_NOTE, challenge);
+        }
 
         WebAuthnPolicy policy = context.getRealm().getWebAuthnPolicy();
         String rpId = policy.getRpId();
@@ -123,7 +126,6 @@ public class UserliWebauthnAuthenticator implements Authenticator {
             rpId = context.getUriInfo().getBaseUri().getHost();
         }
 
-        UserliHttpClient client = clientFactory.create(context.getSession(), context.getRealm(), context.getUser());
         List<AuthenticatorBean> authenticators = client == null ? List.of() : client.getWebauthnCredentials(context.getUser().getEmail())
             .stream()
             .map(credential -> new AuthenticatorBean(credential.getCredentialId()))
@@ -159,12 +161,6 @@ public class UserliWebauthnAuthenticator implements Authenticator {
         }
 
         return new UserliHttpClient(session, model);
-    }
-
-    private static byte[] randomBytes() {
-        byte[] bytes = new byte[32];
-        RANDOM.nextBytes(bytes);
-        return bytes;
     }
 
     /**
