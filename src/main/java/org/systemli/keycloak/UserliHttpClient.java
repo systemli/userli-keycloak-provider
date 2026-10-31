@@ -69,6 +69,39 @@ public class UserliHttpClient {
     }
 
     @SneakyThrows
+    public List<UserliWebauthnCredential> getWebauthnCredentials(String email) {
+        String url = String.format("%s/api/keycloak/%s/credentials/webauthn/%s", baseUrl, realmDomain, email);
+        SimpleHttp.Response response = SimpleHttp.doGet(url, session)
+            .auth(keycloakApiToken)
+            .asResponse();
+        if (response.getStatus() != 200) {
+            return List.of();
+        }
+        return response.asJson(new TypeReference<>() {
+        });
+    }
+
+    /**
+     * Userli verifies the WebAuthn assertion against the stored public key. All values are base64url encoded.
+     */
+    @SneakyThrows
+    public Boolean validateWebauthn(String email, String challenge, String credentialId, String clientDataJSON,
+                                    String authenticatorData, String signature, String userHandle) {
+        String url = String.format("%s/api/keycloak/%s/validate/webauthn/%s", baseUrl, realmDomain, email);
+        SimpleHttp simpleHttp = SimpleHttp.doPost(url, session)
+            .auth(keycloakApiToken)
+            .param("challenge", challenge)
+            .param("credentialId", credentialId)
+            .param("clientDataJSON", clientDataJSON)
+            .param("authenticatorData", authenticatorData)
+            .param("signature", signature);
+        if (userHandle != null && !userHandle.isEmpty()) {
+            simpleHttp.param("userHandle", userHandle);
+        }
+        return simpleHttp.asResponse().getStatus() == 200;
+    }
+
+    @SneakyThrows
     public Boolean isConfiguredFor(String email, String credentialType) {
         String url = String.format("%s/api/keycloak/%s/configured/%s/%s", baseUrl, realmDomain, credentialType, email);
         return SimpleHttp.doGet(url, session)
