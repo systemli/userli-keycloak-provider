@@ -82,6 +82,21 @@ public class UserliHttpClient {
     }
 
     /**
+     * Single-use challenge for a WebAuthn login, base64url encoded, or null if Userli refuses one.
+     */
+    @SneakyThrows
+    public String createWebauthnChallenge(String email) {
+        String url = String.format("%s/api/keycloak/%s/challenge/webauthn/%s", baseUrl, realmDomain, email);
+        SimpleHttp.Response response = SimpleHttp.doPost(url, session)
+            .auth(keycloakApiToken)
+            .asResponse();
+        if (response.getStatus() != 200) {
+            return null;
+        }
+        return response.asJson().path("challenge").asText(null);
+    }
+
+    /**
      * Userli verifies the WebAuthn assertion against the stored public key. All values are base64url encoded.
      */
     @SneakyThrows

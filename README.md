@@ -42,7 +42,7 @@ Security keys and backup codes need Userli 6.13.0 or later.
 
 Users can register security keys as second factor in Userli (Account → Two-Factor Authentication → Security Keys).
 The provider ships the authenticator **Userli Security Key** (`userli-webauthn`), so these keys work in Keycloak too.
-Keycloak creates the challenge and shows its WebAuthn login page, Userli verifies the response against the stored key.
+Userli creates a single-use challenge, Keycloak shows its WebAuthn login page with it and Userli verifies the response against the stored key.
 Keys are registered in Userli only.
 
 1. Keycloak and Userli must share a domain, e.g. `login.example.org` and `users.example.org`.
