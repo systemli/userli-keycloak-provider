@@ -6,6 +6,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
+import org.keycloak.storage.CacheableStorageProviderModel;
+import org.keycloak.storage.CacheableStorageProviderModel.CachePolicy;
 import org.keycloak.storage.UserStorageProviderFactory;
 import org.keycloak.utils.StringUtil;
 
@@ -46,5 +48,8 @@ public class UserliUserStorageProviderFactory implements UserStorageProviderFact
             || StringUtil.isBlank(config.get(Constants.API_TOKEN))) {
             throw new ComponentValidationException("Configuration not properly set, please verify.");
         }
+
+        // Cached users get Keycloak's own credential manager, which doesn't know the security keys from Userli
+        config.getConfig().putSingle(CacheableStorageProviderModel.CACHE_POLICY, CachePolicy.NO_CACHE.name());
     }
 }

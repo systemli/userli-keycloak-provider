@@ -4,6 +4,7 @@ import jakarta.ws.rs.core.Response;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
+import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -25,7 +26,7 @@ public class UserliBackupCodeAuthenticator implements Authenticator {
     private final UserliClientFactory clientFactory;
 
     public UserliBackupCodeAuthenticator() {
-        this(UserliWebauthnAuthenticator::createClient);
+        this(UserliBackupCodeAuthenticator::createClient);
     }
 
     UserliBackupCodeAuthenticator(UserliClientFactory clientFactory) {
@@ -88,5 +89,21 @@ public class UserliBackupCodeAuthenticator implements Authenticator {
         }
 
         return context.form().createForm(TEMPLATE);
+    }
+
+    /**
+     * Client for the Userli instance the user is federated from, or null for other users.
+     */
+    static UserliHttpClient createClient(KeycloakSession session, RealmModel realm, UserModel user) {
+        if (user == null || user.getFederationLink() == null) {
+            return null;
+        }
+
+        ComponentModel model = realm.getComponent(user.getFederationLink());
+        if (model == null || !UserliUserStorageProviderFactory.PROVIDER_ID.equals(model.getProviderId())) {
+            return null;
+        }
+
+        return new UserliHttpClient(session, model);
     }
 }

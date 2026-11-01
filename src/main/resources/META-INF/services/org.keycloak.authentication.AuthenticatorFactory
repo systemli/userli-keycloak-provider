@@ -1,2 +1,1 @@
-org.systemli.keycloak.UserliWebauthnAuthenticatorFactory
 org.systemli.keycloak.UserliBackupCodeAuthenticatorFactory
