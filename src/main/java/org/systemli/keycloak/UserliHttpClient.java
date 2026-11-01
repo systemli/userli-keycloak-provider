@@ -7,6 +7,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.List;
+import java.util.Map;
 
 public class UserliHttpClient {
 
@@ -66,6 +67,34 @@ public class UserliHttpClient {
             .param("password", password)
             .asResponse();
         return response.getStatus() == 200;
+    }
+
+    /**
+     * Security keys of the user. Fails if Userli doesn't answer, so a login doesn't skip the second factor.
+     */
+    @SneakyThrows
+    public List<UserliWebauthnCredential> getWebauthnCredentials(String email) {
+        String url = String.format("%s/api/keycloak/%s/credentials/webauthn/%s", baseUrl, realmDomain, email);
+        SimpleHttp.Response response = SimpleHttp.doGet(url, session)
+            .auth(keycloakApiToken)
+            .asResponse();
+        if (response.getStatus() != 200) {
+            throw new IllegalStateException("Userli returned status " + response.getStatus() + " for the security keys");
+        }
+        return response.asJson(new TypeReference<>() {
+        });
+    }
+
+    /**
+     * Stores the sign count after Keycloak verified an assertion. False if Userli refuses it, e.g. because it does not increase.
+     */
+    @SneakyThrows
+    public Boolean updateWebauthnSignCount(String email, int id, long signCount) {
+        String url = String.format("%s/api/keycloak/%s/credentials/webauthn/%s/%d", baseUrl, realmDomain, email, id);
+        return SimpleHttp.doPut(url, session)
+            .auth(keycloakApiToken)
+            .json(Map.of("signCount", signCount))
+            .asResponse().getStatus() == 200;
     }
 
     @SneakyThrows
