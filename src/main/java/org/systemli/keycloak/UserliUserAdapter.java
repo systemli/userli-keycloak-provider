@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
-import org.keycloak.credential.UserCredentialManager;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.SubjectCredentialManager;
@@ -16,12 +15,15 @@ import org.keycloak.storage.adapter.AbstractUserAdapter;
 public class UserliUserAdapter extends AbstractUserAdapter {
 
     private final UserliUser user;
+    private final UserliHttpClient client;
+    private List<UserliWebauthnCredential> webauthnCredentials;
 
     public UserliUserAdapter(KeycloakSession session, RealmModel realm, ComponentModel storageProviderModel,
-                             UserliUser user) {
+                             UserliUser user, UserliHttpClient client) {
         super(session, realm, storageProviderModel);
         this.storageId = new StorageId(storageProviderModel.getId(), user.getId());
         this.user = user;
+        this.client = client;
     }
 
     @Override
@@ -50,6 +52,21 @@ public class UserliUserAdapter extends AbstractUserAdapter {
 
     @Override
     public SubjectCredentialManager credentialManager() {
-        return new UserCredentialManager(session, realm, this);
+        return new UserliCredentialManager(session, realm, this);
+    }
+
+    UserliHttpClient getClient() {
+        return client;
+    }
+
+    /**
+     * Security keys of the user, loaded once per request because a login asks for them several times.
+     */
+    List<UserliWebauthnCredential> getWebauthnCredentials() {
+        if (webauthnCredentials == null) {
+            webauthnCredentials = client.getWebauthnCredentials(getEmail());
+        }
+
+        return webauthnCredentials;
     }
 }

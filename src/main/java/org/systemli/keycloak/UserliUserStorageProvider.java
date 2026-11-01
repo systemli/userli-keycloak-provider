@@ -85,7 +85,7 @@ public class UserliUserStorageProvider implements UserStorageProvider, UserLooku
         if (adapter == null) {
             try {
                 UserliUser user = client.getUserById(identifier);
-                adapter = new UserliUserAdapter(session, realm, model, user);
+                adapter = new UserliUserAdapter(session, realm, model, user, client);
                 loadedUsers.put(identifier, adapter);
             } catch (WebApplicationException ignored) {
             }
@@ -105,7 +105,7 @@ public class UserliUserStorageProvider implements UserStorageProvider, UserLooku
     }
 
     private Stream<UserModel> toUserModelStream(List<UserliUser> users, RealmModel realm) {
-        return users.stream().map(user -> new UserliUserAdapter(session, realm, model, user));
+        return users.stream().map(user -> new UserliUserAdapter(session, realm, model, user, client));
     }
 
     @Override

@@ -7,6 +7,7 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 
 import java.util.List;
+import java.util.Map;
 
 public class UserliHttpClient {
 
@@ -68,6 +69,9 @@ public class UserliHttpClient {
         return response.getStatus() == 200;
     }
 
+    /**
+     * Security keys of the user. Fails if Userli doesn't answer, so a login doesn't skip the second factor.
+     */
     @SneakyThrows
     public List<UserliWebauthnCredential> getWebauthnCredentials(String email) {
         String url = String.format("%s/api/keycloak/%s/credentials/webauthn/%s", baseUrl, realmDomain, email);
@@ -75,45 +79,22 @@ public class UserliHttpClient {
             .auth(keycloakApiToken)
             .asResponse();
         if (response.getStatus() != 200) {
-            return List.of();
+            throw new IllegalStateException("Userli returned status " + response.getStatus() + " for the security keys");
         }
         return response.asJson(new TypeReference<>() {
         });
     }
 
     /**
-     * Single-use challenge for a WebAuthn login, base64url encoded, or null if Userli refuses one.
+     * Stores the sign count after Keycloak verified an assertion. False if Userli refuses it, e.g. because it does not increase.
      */
     @SneakyThrows
-    public String createWebauthnChallenge(String email) {
-        String url = String.format("%s/api/keycloak/%s/challenge/webauthn/%s", baseUrl, realmDomain, email);
-        SimpleHttp.Response response = SimpleHttp.doPost(url, session)
+    public Boolean updateWebauthnSignCount(String email, int id, long signCount) {
+        String url = String.format("%s/api/keycloak/%s/credentials/webauthn/%s/%d", baseUrl, realmDomain, email, id);
+        return SimpleHttp.doPut(url, session)
             .auth(keycloakApiToken)
-            .asResponse();
-        if (response.getStatus() != 200) {
-            return null;
-        }
-        return response.asJson().path("challenge").asText(null);
-    }
-
-    /**
-     * Userli verifies the WebAuthn assertion against the stored public key. All values are base64url encoded.
-     */
-    @SneakyThrows
-    public Boolean validateWebauthn(String email, String challenge, String credentialId, String clientDataJSON,
-                                    String authenticatorData, String signature, String userHandle) {
-        String url = String.format("%s/api/keycloak/%s/validate/webauthn/%s", baseUrl, realmDomain, email);
-        SimpleHttp simpleHttp = SimpleHttp.doPost(url, session)
-            .auth(keycloakApiToken)
-            .param("challenge", challenge)
-            .param("credentialId", credentialId)
-            .param("clientDataJSON", clientDataJSON)
-            .param("authenticatorData", authenticatorData)
-            .param("signature", signature);
-        if (userHandle != null && !userHandle.isEmpty()) {
-            simpleHttp.param("userHandle", userHandle);
-        }
-        return simpleHttp.asResponse().getStatus() == 200;
+            .json(Map.of("signCount", signCount))
+            .asResponse().getStatus() == 200;
     }
 
     @SneakyThrows
