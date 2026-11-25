@@ -71,6 +71,7 @@ public class UserliHttpClient {
 
     /**
      * Security keys of the user. Fails if Userli doesn't answer, so a login doesn't skip the second factor.
+     * Userli before 6.15 has no such endpoint (404) and no security keys, so it counts as no keys.
      */
     @SneakyThrows
     public List<UserliWebauthnCredential> getWebauthnCredentials(String email) {
@@ -78,6 +79,9 @@ public class UserliHttpClient {
         SimpleHttp.Response response = SimpleHttp.doGet(url, session)
             .auth(keycloakApiToken)
             .asResponse();
+        if (response.getStatus() == 404) {
+            return List.of();
+        }
         if (response.getStatus() != 200) {
             throw new IllegalStateException("Userli returned status " + response.getStatus() + " for the security keys");
         }
