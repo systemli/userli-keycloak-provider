@@ -5,6 +5,7 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.component.ComponentModel;
+import org.keycloak.events.Errors;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
@@ -54,6 +55,8 @@ public class UserliBackupCodeAuthenticator implements Authenticator {
             && client.validate(context.getUser().getEmail(), code.trim(), CREDENTIAL_TYPE);
 
         if (!valid) {
+            // Keycloak's brute force protection counts failed logins from this event
+            context.getEvent().user(context.getUser()).error(Errors.INVALID_USER_CREDENTIALS);
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS,
                 createForm(context, "userli-backup-code-invalid"));
             return;

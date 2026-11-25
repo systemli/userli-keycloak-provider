@@ -17,6 +17,8 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.http.HttpRequest;
+import org.keycloak.events.Errors;
+import org.keycloak.events.EventBuilder;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.utils.FormMessage;
 
@@ -32,6 +34,8 @@ class UserliBackupCodeAuthenticatorTest {
 
     private final Response response = mock(Response.class);
 
+    private final EventBuilder event = mock(EventBuilder.class, RETURNS_SELF);
+
     private final MultivaluedHashMap<String, String> params = new MultivaluedHashMap<>();
 
     private final UserliBackupCodeAuthenticator authenticator = new UserliBackupCodeAuthenticator((session, realm, user) -> client);
@@ -46,6 +50,7 @@ class UserliBackupCodeAuthenticatorTest {
         when(request.getDecodedFormParameters()).thenReturn(params);
         when(context.getHttpRequest()).thenReturn(request);
 
+        when(context.getEvent()).thenReturn(event);
         when(context.form()).thenReturn(form);
         when(form.createForm("userli-backup-code.ftl")).thenReturn(response);
     }
@@ -87,6 +92,7 @@ class UserliBackupCodeAuthenticatorTest {
         authenticator.action(context);
 
         verify(form).addError(any(FormMessage.class));
+        verify(event).error(Errors.INVALID_USER_CREDENTIALS);
         verify(context).failureChallenge(eq(AuthenticationFlowError.INVALID_CREDENTIALS), eq(response));
         verify(context, never()).success();
     }
