@@ -38,7 +38,7 @@ This is a user provider for [Userli](https://github.com/systemli/userli) that us
 
 ## Security keys (WebAuthn)
 
-Security keys and backup codes need Userli 6.13.0 or later.
+Security keys and backup codes need Userli 6.15.0 or later.
 
 Users can register security keys as second factor in Userli (Account → Two-Factor Authentication → Security Keys).
 Keycloak's own **WebAuthn Authenticator** checks them: the provider hands it the keys of the user from Userli, Keycloak
