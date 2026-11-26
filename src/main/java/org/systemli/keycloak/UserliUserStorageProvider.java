@@ -87,7 +87,7 @@ public class UserliUserStorageProvider implements UserStorageProvider, UserLooku
                 UserliUser user = client.getUserById(identifier);
                 adapter = new UserliUserAdapter(session, realm, model, user);
                 loadedUsers.put(identifier, adapter);
-            } catch (WebApplicationException ignored) {
+            } catch (UserNotFoundException | WebApplicationException ignored) {
             }
         }
         return adapter;
