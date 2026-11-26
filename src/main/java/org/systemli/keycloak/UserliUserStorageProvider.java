@@ -33,9 +33,13 @@ public class UserliUserStorageProvider implements UserStorageProvider, UserLooku
     protected Properties properties = new Properties();
 
     public UserliUserStorageProvider(KeycloakSession session, ComponentModel model) {
+        this(session, model, new UserliHttpClient(session, model));
+    }
+
+    UserliUserStorageProvider(KeycloakSession session, ComponentModel model, UserliHttpClient client) {
         this.session = session;
         this.model = model;
-        this.client = new UserliHttpClient(session, model);
+        this.client = client;
     }
 
     @Override
