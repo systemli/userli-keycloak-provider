@@ -46,7 +46,7 @@ public class UserliHttpClient {
     }
 
     @SneakyThrows
-    public UserliUser getUserById(String id) {
+    public UserliUser getUserById(String id) throws UserNotFoundException {
         String url = String.format("%s/api/keycloak/%s/user/%s", baseUrl, realmDomain, id);
         SimpleHttp.Response response = SimpleHttp.doGet(url, session)
             .auth(keycloakApiToken)
