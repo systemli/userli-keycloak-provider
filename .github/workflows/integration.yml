@@ -19,10 +19,14 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 17
-          cache: "maven"
 
-      - name: Download dependencies
-        run: mvn -B dependency:go-offline
+      - name: Cache Maven repository
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ github.job }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ github.job }}-
 
       - name: Test
         run: mvn -B test
@@ -39,10 +43,14 @@ jobs:
         with:
           distribution: "temurin"
           java-version: 17
-          cache: "maven"
 
-      - name: Download dependencies
-        run: mvn -B dependency:go-offline
+      - name: Cache Maven repository
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ github.job }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ github.job }}-
 
       - name: Build
         run: mvn -B package -DskipTests
