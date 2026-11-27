@@ -41,9 +41,14 @@ This is a user provider for [Userli](https://github.com/systemli/userli) that us
 Security keys and backup codes need Userli 6.15.0 or later. Update Userli before the provider.
 
 Users can register security keys as second factor in Userli (Account → Two-Factor Authentication → Security Keys).
-Keycloak's own **WebAuthn Authenticator** checks them: the provider hands it the keys of the user from Userli, Keycloak
-verifies the assertion against the stored public key and sends the new sign count back to Userli.
-Keys are registered, renamed and removed in Userli only.
+The **Userli WebAuthn Authenticator** (`userli-webauthn-authenticator`) checks them. It is Keycloak's own WebAuthn
+authenticator: the provider hands it the keys of the user from Userli, Keycloak verifies the assertion against the stored
+public key and sends the new sign count back to Userli. Keys are registered, renamed and removed in Userli only.
+
+Use it instead of Keycloak's **WebAuthn Authenticator**, which rejects passkeys (e.g. from password managers) with
+"different user": they send the user handle assigned by Userli, which is not the id of the federated Keycloak user.
+As a second factor the user is already known from the password step, so the Userli authenticator ignores the user handle
+and only accepts the keys of that user.
 
 The provider turns off Keycloak's user cache for the Userli federation (cache policy `NO_CACHE`), because cached users
 get Keycloak's own credential manager, which doesn't know the keys from Userli. After an update of the provider,
@@ -55,8 +60,8 @@ open the federation in the admin console and save it once.
 3. In Keycloak, go to **Authentication → Policies → WebAuthn Policy** and set **Relying Party ID** to the same domain.
    Leave **User Verification Requirement** at `not specified` or `discouraged`.
 4. Add the authenticators to the browser flow. Duplicate the **browser** flow and, in its conditional 2FA sub-flow
-   (**Condition - user configured**), set **WebAuthn Authenticator** to **Alternative** and add **Userli Backup Code**
-   as **Alternative** next to **OTP Form**. Bind the new flow as browser flow.
+   (**Condition - user configured**), add **Userli WebAuthn Authenticator** and **Userli Backup Code** as **Alternative**
+   next to **OTP Form**. Bind the new flow as browser flow.
 5. Keep the required action **Webauthn Register** disabled, so users don't register keys in Keycloak.
 
 Users choose between their second factors with **Try another way**. Methods a user has not set up are skipped.
